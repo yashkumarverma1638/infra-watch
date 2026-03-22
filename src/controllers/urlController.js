@@ -1,13 +1,47 @@
 const prisma = require("../config/prisma");
+const planLimits = require("../../prisma/config/planLimits");
 
 exports.addUrl = async (req, res) => {
   try {
-    const { url, userId } = req.body;
+    const userId = req.userId;
+    const { url } = req.body;
+
+    const existing = await prisma.url.findFirst({
+      where: {
+        url,
+        userId,
+      },
+    });
+
+    if (existing) {
+      return res.status(400).json({ error: "URL already exists" });
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    const count = await prisma.url.count({
+      where: { userId },
+    });
+
+    const plan = user.plan || "FREE";
+    const limit = planLimits[plan].maxMonitors;
+
+    if (count >= limit) {
+      return res.status(403).json({
+        error: `Limit reached (${limit}). Upgrade plan.`,
+      });
+    }
 
     const newUrl = await prisma.url.create({
       data: {
         url,
-        userId: req.userId,
+        userId,
       },
     });
 
@@ -16,7 +50,11 @@ exports.addUrl = async (req, res) => {
       data: newUrl,
     });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    console.error(error);
+
+    res.status(500).json({
+      error: "Internal server error",
+    });
   }
 };
 

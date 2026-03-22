@@ -13,6 +13,7 @@ model User {
   password  String
   createdAt DateTime @default(now())
   urls      Url[]
+  plan      String   @default("FREE") // FREE / PRO
 }
 
 model Url {
@@ -22,6 +23,7 @@ model Url {
   createdAt DateTime    @default(now())
   logs      UptimeLog[]
   user      User        @relation(fields: [userId], references: [id])
+  
 }
 
 model UptimeLog {
