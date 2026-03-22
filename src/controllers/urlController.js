@@ -7,7 +7,7 @@ exports.addUrl = async (req, res) => {
     const newUrl = await prisma.url.create({
       data: {
         url,
-        userId: parseInt(userId),
+        userId: req.userId,
       },
     });
 
@@ -22,17 +22,34 @@ exports.addUrl = async (req, res) => {
 
 exports.getUrls = async (req, res) => {
   const urls = await prisma.url.findMany({
+    where: {
+      userId: req.userId,
+    },
     include: {
-      logs: {
-        take: 1,
-        orderBy: {
-          checkedAt: "desc",
-        },
-      },
+      logs: true, // get all logs
     },
   });
 
-  res.json(urls);
+  const result = urls.map((url) => {
+    const total = url.logs.length;
+
+    const up = url.logs.filter((log) => log.status === "UP").length;
+
+    const uptime = total ? ((up / total) * 100).toFixed(2) + "%" : "100%";
+
+    const latestLog = url.logs.sort(
+      (a, b) => new Date(b.checkedAt) - new Date(a.checkedAt),
+    )[0];
+
+    return {
+      id: url.id,
+      url: url.url,
+      uptime,
+      logs: latestLog ? [latestLog] : [],
+    };
+  });
+
+  res.json(result);
 };
 
 exports.getMetrics = async (req, res) => {
@@ -69,4 +86,14 @@ exports.getUptime = async (req, res) => {
   res.json({
     uptime: uptime.toFixed(2) + "%",
   });
+};
+
+exports.deleteUrl = async (req, res) => {
+  const { id } = req.params;
+
+  await prisma.url.delete({
+    where: { id: parseInt(id) },
+  });
+
+  res.json({ message: "Monitor deleted" });
 };

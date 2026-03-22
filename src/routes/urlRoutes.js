@@ -6,11 +6,13 @@ const {
   getUrls,
   getMetrics,
   getUptime,
+  deleteUrl,
 } = require("../controllers/urlController");
 
 router.get("/", getUrls);
 router.post("/add", addUrl);
 router.get("/metrics/:urlId", getMetrics);
 router.get("/uptime/:urlId", getUptime);
+router.delete("/:id", deleteUrl);
 
 module.exports = router;

@@ -30,5 +30,5 @@ model UptimeLog {
   status       String
   responseTime Int
   checkedAt    DateTime @default(now())
-  url          Url      @relation(fields: [urlId], references: [id])
+  url Url @relation(fields: [urlId], references: [id], onDelete: Cascade)
 }
