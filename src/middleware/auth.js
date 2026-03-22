@@ -1,13 +1,26 @@
 const jwt = require("jsonwebtoken");
 
 module.exports = (req, res, next) => {
-  const token = req.headers.authorization?.split(" ")[1];
+  try {
+    const authHeader = req.headers.authorization;
 
-  if (!token) return res.status(401).json({ error: "Unauthorized" });
+    if (!authHeader) {
+      return res.status(401).json({ error: "No token provided" });
+    }
 
-  const decoded = jwt.verify(token, "secret");
+    const token = authHeader.split(" ")[1];
 
-  req.userId = decoded.userId;
+    if (!token) {
+      return res.status(401).json({ error: "Invalid token format" });
+    }
 
-  next();
+    const decoded = jwt.verify(token, "secret");
+
+    req.userId = decoded.userId;
+
+    next();
+  } catch (err) {
+    console.error(err);
+    return res.status(401).json({ error: "Invalid token" });
+  }
 };

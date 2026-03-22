@@ -16,6 +16,16 @@ model User {
   plan      String   @default("FREE") // FREE / PRO
 }
 
+model Alert {
+  id        Int      @id @default(autoincrement())
+  urlId     Int
+  message   String
+  status    String   // DOWN / RECOVERED
+  createdAt DateTime @default(now())
+
+  url       Url      @relation(fields: [urlId], references: [id])
+}
+
 model Url {
   id        Int         @id @default(autoincrement())
   url       String
@@ -23,7 +33,7 @@ model Url {
   createdAt DateTime    @default(now())
   logs      UptimeLog[]
   user      User        @relation(fields: [userId], references: [id])
-  
+  alerts    Alert[]   // 🔥 ADD THIS LINE
 }
 
 model UptimeLog {
@@ -34,3 +44,4 @@ model UptimeLog {
   checkedAt    DateTime @default(now())
   url Url @relation(fields: [urlId], references: [id], onDelete: Cascade)
 }
+
