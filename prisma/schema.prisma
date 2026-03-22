@@ -23,7 +23,7 @@ model Alert {
   status    String   // DOWN / RECOVERED
   createdAt DateTime @default(now())
 
-  url       Url      @relation(fields: [urlId], references: [id])
+  url    Url  @relation(fields: [urlId], references: [id], onDelete: Cascade)
 }
 
 model Url {

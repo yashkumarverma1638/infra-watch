@@ -1,5 +1,9 @@
 const axios = require("axios");
 const prisma = require("../config/prisma");
+const {
+  sendDownEmail,
+  sendRecoveryEmail,
+} = require("../services/emailService");
 
 async function checkUrls(io) {
   const urls = await prisma.url.findMany({
@@ -49,6 +53,11 @@ async function checkUrls(io) {
             status: "DOWN",
           },
         });
+        if (status === "DOWN") {
+          await sendDownEmail(item.user.email, item.url);
+        } else {
+          await sendRecoveryEmail(item.user.email, item.url);
+        }
 
         io.to(userId).emit("alert:new", alert);
       } else if (lastLog && lastLog.status !== status) {
@@ -90,7 +99,7 @@ async function checkUrls(io) {
       });
 
       // 🔥 ALERT LOGIC
-      if (!lastLog || lastLog.status !== "DOWN") {
+      if (!lastLog && status === "DOWN") {
         const alert = await prisma.alert.create({
           data: {
             urlId: item.id,
@@ -98,6 +107,29 @@ async function checkUrls(io) {
             status: "DOWN",
           },
         });
+
+        // 🔥 EMAIL
+        await sendDownEmail(item.user.email, item.url);
+
+        io.to(userId).emit("alert:new", alert);
+      } else if (lastLog && lastLog.status !== status) {
+        const alert = await prisma.alert.create({
+          data: {
+            urlId: item.id,
+            message:
+              status === "DOWN"
+                ? `${item.url} is DOWN 🚨`
+                : `${item.url} is BACK UP ✅`,
+            status,
+          },
+        });
+
+        // 🔥 EMAIL
+        if (status === "DOWN") {
+          await sendDownEmail(item.user.email, item.url);
+        } else {
+          await sendRecoveryEmail(item.user.email, item.url);
+        }
 
         io.to(userId).emit("alert:new", alert);
       }
