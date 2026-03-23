@@ -6,16 +6,25 @@ const urlRoutes = require("./routes/urlRoutes");
 const authRoutes = require("./routes/authRoutes");
 const userRoutes = require("./routes/userRoutes");
 const alertRoutes = require("./routes/alertRoutes");
+const webhookRoutes = require("./routes/webhookRoutes");
+const app = express();
+app.use("/api/payments/webhook", webhookRoutes);
 
 const { Server } = require("socket.io");
 const http = require("http");
 const authMiddleware = require("./middleware/auth");
 const { user } = require("./config/prisma");
+const {
+  createCheckoutSession,
+  stripeWebhook,
+} = require("./controllers/paymentController");
 
-const app = express();
 app.use(cors());
 app.use(express.json());
 app.use("/api/auth", authRoutes);
+const paymentRoutes = require("./routes/paymentRoutes");
+
+app.use("/api/payments", paymentRoutes);
 app.use("/api/user", authMiddleware, userRoutes);
 app.get("/health", (req, res) => {
   res.json({ status: "Monitoring API running" });

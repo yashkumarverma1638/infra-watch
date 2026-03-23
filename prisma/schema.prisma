@@ -14,6 +14,10 @@ model User {
   createdAt DateTime @default(now())
   urls      Url[]
   plan      String   @default("FREE") // FREE / PRO
+  stripeCustomerId    String?
+  stripeSubscriptionId String?
+  subscriptionStatus  String? // active, canceled, past_due
+  currentPeriodEnd    DateTime?
 }
 
 model Alert {
