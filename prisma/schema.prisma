@@ -18,6 +18,7 @@ model User {
   stripeSubscriptionId String?
   subscriptionStatus  String? // active, canceled, past_due
   currentPeriodEnd    DateTime?
+  notificationSettings NotificationSettings? 
 }
 
 model Alert {
@@ -49,3 +50,12 @@ model UptimeLog {
   url Url @relation(fields: [urlId], references: [id], onDelete: Cascade)
 }
 
+
+model NotificationSettings {
+  id               String   @id @default(cuid())
+  userId           Int   @unique
+  slackWebhookUrl  String?
+  teamsWebhookUrl  String?
+  googleChatWebhook String?   
+  user             User     @relation(fields: [userId], references: [id])
+}
