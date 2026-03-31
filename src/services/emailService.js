@@ -38,7 +38,18 @@ async function sendRecoveryEmail(to, url) {
   });
 }
 
+async function sendEmail({ to, subject, html }) {
+  console.log("Sending email to:", to, subject, html);
+  await transporter.sendMail({
+    from: `"InfraWatch 🚨" <ykverma321@gmail.com>`, // ✅ verified sender
+    to,
+    subject,
+    html,
+  });
+}
+
 module.exports = {
   sendDownEmail,
   sendRecoveryEmail,
+  sendEmail,
 };

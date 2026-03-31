@@ -18,7 +18,9 @@ model User {
   stripeSubscriptionId String?
   subscriptionStatus  String? // active, canceled, past_due
   currentPeriodEnd    DateTime?
-  notificationSettings NotificationSettings? 
+  notificationSettings NotificationSettings?
+  resetToken    String?
+  resetTokenExp DateTime? 
 }
 
 model Alert {
